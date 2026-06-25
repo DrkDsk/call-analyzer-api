@@ -2,21 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\PhoneRecordsImport;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Actions\AnalyzePhoneEventsImportAction;
+use App\Exceptions\HeadersRequiredException;
+use App\Http\Requests\AnalyzePhoneEventsImportRequest;
+use App\Http\Resources\ErrorResource;
+use App\Http\Resources\PhoneEventsImportPreviewResource;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PhoneEventsController extends Controller
 {
-    public function readFile(Request $request): JsonResponse
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv'],
-        ]);
+    public function preview(
+        AnalyzePhoneEventsImportRequest $request,
+        AnalyzePhoneEventsImportAction $action
+    ) : PhoneEventsImportPreviewResource | ErrorResource {
+        try {
+            $result = $action->execute(
+                $request->file('file'),
+                $request->persistSummary(),
+            );
 
-        Excel::import(new PhoneRecordsImport, $request->file('file'));
+            return new PhoneEventsImportPreviewResource($result);
+        } catch (HeadersRequiredException $exception) {
+            return new ErrorResource(
+                $exception->getMessage(),
+                422
+            );
+        } catch (Throwable $exception) {
+            Log::error('Phone events import failed.', [
+                'exception' => $exception,
+            ]);
 
-        return response()->json(['message' => 'File imported successfully']);
+            return new ErrorResource(
+                'No se pudo procesar el archivo.',
+                500
+            );
+        }
     }
 }
