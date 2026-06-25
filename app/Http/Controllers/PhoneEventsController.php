@@ -7,11 +7,7 @@ use App\Exceptions\HeadersRequiredException;
 use App\Http\Requests\AnalyzePhoneEventsImportRequest;
 use App\Http\Resources\ErrorResource;
 use App\Http\Resources\PhoneEventsImportPreviewResource;
-use App\Imports\PhoneRecordsImport;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
 class PhoneEventsController extends Controller
