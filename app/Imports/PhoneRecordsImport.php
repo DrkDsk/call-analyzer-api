@@ -58,8 +58,6 @@ class PhoneRecordsImport implements ToCollection
             }
         }
 
-        logger($data);
-
         return $data;
     }
 
