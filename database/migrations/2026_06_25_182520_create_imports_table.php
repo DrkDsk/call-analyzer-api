@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('imports', static function (Blueprint $table) {
             $table->id();
             $table->string('original_filename');
+            $table->string('stored_path')->nullable();
             $table->unsignedBigInteger('file_size');
             $table->string('mime_type');
 
@@ -21,7 +22,7 @@ return new class extends Migration
                 'queued',
                 'processing',
                 'completed',
-                'failed'
+                'failed',
             ])->default('queued');
 
             $table->unsignedInteger('total_rows')->default(0);
