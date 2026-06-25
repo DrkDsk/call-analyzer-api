@@ -17,6 +17,7 @@ class PhoneEventsImportResource extends JsonResource
         return [
             'id' => $this["id"],
             'status' => $this["status"],
+            'original_filename' => $this["original_filename"],
             'progress' => $this["progress"],
         ];
     }

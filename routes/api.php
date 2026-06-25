@@ -10,3 +10,5 @@ Route::get('/user', static function (Request $request) {
 
 Route::post('imports/phone-events/analyze', [PhoneEventsController::class, 'preview'])
     ->name('imports.phone-events.preview');
+
+Route::get('process/{import}/show', [PhoneEventsController::class, 'show']);
