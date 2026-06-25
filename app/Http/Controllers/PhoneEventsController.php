@@ -7,6 +7,7 @@ use App\Exceptions\HeadersRequiredException;
 use App\Http\Requests\AnalyzePhoneEventsImportRequest;
 use App\Http\Resources\ErrorResource;
 use App\Http\Resources\PhoneEventsImportPreviewResource;
+use App\Models\Import;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -36,6 +37,27 @@ class PhoneEventsController extends Controller
             return new ErrorResource(
                 'No se pudo procesar el archivo.',
                 500
+            );
+        }
+    }
+
+    public function show(Import $import) : PhoneEventsImportPreviewResource | ErrorResource
+    {
+        try {
+            $data = [
+                'import' => [
+                    "id" => $import->id,
+                    "original_filename" => $import->original_filename,
+                    "status" => $import->status,
+                    "progress" => $import->progress
+                ],
+                "summary" => $import->summary
+            ];
+
+            return new PhoneEventsImportPreviewResource($data);
+        } catch (Throwable $exception) {
+            return new ErrorResource(
+                'No se pudo cargar el archivo.',
             );
         }
     }

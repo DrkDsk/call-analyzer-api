@@ -60,6 +60,7 @@ class AnalyzePhoneEventsImportAction
                 'import' => $import ? [
                     'id' => $import->id,
                     'status' => $import->status,
+                    'original_filename' => $import->original_filename,
                     'progress' => $import->progress,
                 ] : null,
                 'summary' => $summary,
