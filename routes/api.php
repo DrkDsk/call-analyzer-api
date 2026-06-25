@@ -8,5 +8,5 @@ Route::get('/user', static function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('imports/phone-events/preview', [PhoneEventsController::class, 'preview'])
+Route::post('imports/phone-events/analyze', [PhoneEventsController::class, 'preview'])
     ->name('imports.phone-events.preview');
