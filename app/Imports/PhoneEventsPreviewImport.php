@@ -16,6 +16,11 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
 {
     private ?array $headersMap = null;
 
+    /**
+     * @var array<int, PhoneEventData>
+     */
+    private array $events = [];
+
     public function __construct(
         private readonly PhoneEventsStatsAccumulator $accumulator,
         private readonly PhoneEventsHeaderDetector $headerDetector = new PhoneEventsHeaderDetector,
@@ -28,7 +33,6 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
     public function collection(Collection $collection): void
     {
         $rows = $collection;
-
 
         if ($this->headersMap === null) {
             try {
@@ -50,6 +54,7 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
             }
 
             $this->accumulator->add($event);
+            $this->events[] = $event;
             $processedRows++;
         }
 
@@ -66,5 +71,13 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
     public function hasDetectedHeaders(): bool
     {
         return $this->headersMap !== null;
+    }
+
+    /**
+     * @return array<int, PhoneEventData>
+     */
+    public function events(): array
+    {
+        return $this->events;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Import extends Model
 {
@@ -28,5 +29,10 @@ class Import extends Model
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
         ];
+    }
+
+    public function phoneEvents(): HasMany
+    {
+        return $this->hasMany(PhoneEvent::class);
     }
 }
