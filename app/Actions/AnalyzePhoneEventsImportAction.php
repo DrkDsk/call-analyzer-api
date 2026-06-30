@@ -46,7 +46,7 @@ class AnalyzePhoneEventsImportAction
             );
 
             if (! $previewImport->hasDetectedHeaders()) {
-                throw new HeadersRequiredException('No se encontraron los encabezados requeridos en el archivo.');
+                throw new HeadersRequiredException('No se encontró una sección válida de eventos telefónicos en el archivo.');
             }
 
             $summary = $accumulator->result();

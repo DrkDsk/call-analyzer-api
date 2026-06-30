@@ -16,6 +16,8 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
 {
     private ?array $headersMap = null;
 
+    private ?Collection $pendingHeaderRows = null;
+
     /**
      * @var array<int, PhoneEventData>
      */
@@ -32,21 +34,30 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
      */
     public function collection(Collection $collection): void
     {
-        $rows = $collection;
+        $rows = $this->pendingHeaderRows
+            ? $this->pendingHeaderRows->concat($collection)->values()
+            : $collection->values();
 
         if ($this->headersMap === null) {
             try {
                 [$headerRowIndex, $this->headersMap] = $this->headerDetector->detect($rows);
             } catch (HeadersRequiredException) {
+                $this->pendingHeaderRows = $this->rowsFromLastHeaderCandidate($rows);
+
                 return;
             }
 
+            $this->pendingHeaderRows = null;
             $rows = $rows->slice($headerRowIndex + 1);
         }
 
         $processedRows = 0;
 
         foreach ($rows as $row) {
+            if ($this->headerDetector->isHeaderRow($row) || $this->headerDetector->isNoDetailsRow($row)) {
+                continue;
+            }
+
             $event = PhoneEventData::fromExcelRow($row, $this->headersMap);
 
             if ($event === null) {
@@ -71,6 +82,21 @@ class PhoneEventsPreviewImport implements SkipsEmptyRows, ToCollection, WithChun
     public function hasDetectedHeaders(): bool
     {
         return $this->headersMap !== null;
+    }
+
+    private function rowsFromLastHeaderCandidate(Collection $rows): Collection
+    {
+        $lastHeaderIndex = null;
+
+        foreach ($rows->values() as $rowIndex => $row) {
+            if ($this->headerDetector->isHeaderRow($row)) {
+                $lastHeaderIndex = $rowIndex;
+            }
+        }
+
+        return $lastHeaderIndex === null
+            ? collect()
+            : $rows->slice($lastHeaderIndex)->values();
     }
 
     /**
