@@ -16,11 +16,12 @@ readonly class PhoneEventData
         public ?string $numberB,
         public ?string $date,
         public ?string $time,
-        public int     $duration,
+        public int $duration,
         public ?string $imei,
-        public ?float  $latitude,
-        public ?float  $longitude,
-        public ?float  $azimuth,
+        public ?float $latitude,
+        public ?float $longitude,
+        public ?float $azimuth,
+        public ?string $occurredTime = null,
     ) {}
 
     /**
@@ -37,7 +38,7 @@ readonly class PhoneEventData
         $location = self::cleanString(self::value($row, $headersMap, 'location'));
         [$latitude, $longitude] = self::parseLocation($location);
 
-        $timeValue = self::cleanString( self::value($row, $headersMap, 'time'));
+        [$time, $occurredTime] = self::parseTime(self::value($row, $headersMap, 'time'));
 
         $event = new self(
             phone: self::cleanString(self::value($row, $headersMap, 'phone')),
@@ -45,12 +46,13 @@ readonly class PhoneEventData
             numberA: self::cleanString(self::value($row, $headersMap, 'number_a')),
             numberB: self::cleanString(self::value($row, $headersMap, 'number_b')),
             date: self::parseDate(self::value($row, $headersMap, 'date')),
-            time: Carbon::instance(ExcelDate::excelToDateTimeObject($timeValue))->format('H:i'),
+            time: $time,
             duration: self::parseInteger(self::value($row, $headersMap, 'duration')),
             imei: self::cleanString(self::value($row, $headersMap, 'imei')),
             latitude: $latitude,
             longitude: $longitude,
             azimuth: self::parseDecimal(self::value($row, $headersMap, 'azimuth')),
+            occurredTime: $occurredTime,
         );
 
         if (blank($event->phone) && blank($event->numberA) && blank($event->numberB) && blank($event->type)) {
@@ -139,6 +141,28 @@ readonly class PhoneEventData
             return Carbon::parse((string) $value)->toDateString();
         } catch (Throwable) {
             return self::cleanString($value);
+        }
+    }
+
+    /**
+     * @return array{0:?string, 1:?string}
+     */
+    private static function parseTime(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [null, null];
+        }
+
+        try {
+            $time = is_numeric($value)
+                ? Carbon::instance(ExcelDate::excelToDateTimeObject((float) $value))
+                : Carbon::parse((string) $value);
+
+            return [$time->format('H:00'), $time->format('H:i:s')];
+        } catch (Throwable) {
+            $value = self::cleanString($value);
+
+            return [$value, $value];
         }
     }
 

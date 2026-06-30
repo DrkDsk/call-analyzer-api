@@ -13,6 +13,10 @@ use Throwable;
 
 class AnalyzePhoneEventsImportAction
 {
+    public function __construct(
+        private readonly PersistPhoneEventsFromRowsAction $persistPhoneEventsFromRows,
+    ) {}
+
     /**
      * @throws Throwable
      * @throws HeadersRequiredException
@@ -55,6 +59,10 @@ class AnalyzePhoneEventsImportAction
                 'summary' => $summary,
                 'finished_at' => now(),
             ]);
+
+            if ($persistSummary && $import) {
+                $this->persistPhoneEventsFromRows->execute($import, $previewImport->events());
+            }
 
             return [
                 'import' => $import ? [
