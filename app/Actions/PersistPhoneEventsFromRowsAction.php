@@ -116,8 +116,8 @@ class PersistPhoneEventsFromRowsAction
 
         return match (true) {
             in_array($type, ['DATOS', 'DATO', 'DATA'], true) => 'data',
-            in_array($type, ['SMS', 'MENSAJE', 'MENSAJES'], true) => 'message',
-            in_array($type, ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL'], true) => 'call',
+            in_array($type, ['SMS', 'MENSAJE', 'MENSAJES', 'MENSAJES 2 VIAS'], true) => 'message',
+            in_array($type, ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL', 'VOZ ENTRANTE', 'VOZ SALIENTE', 'VOZ TRANSITO'], true) => 'call',
             default => null,
         };
     }
