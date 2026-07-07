@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
-class AnalyzePhoneEventsImportAction
+readonly class AnalyzePhoneEventsImportAction
 {
     public function __construct(
-        private readonly PersistPhoneEventsFromRowsAction $persistPhoneEventsFromRows,
+        private PersistPhoneEventsFromRowsAction $persistPhoneEventsFromRows,
     ) {}
 
     /**
