@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Constants\PhoneEventsConstants;
 use App\Data\PhoneEventData;
 use App\Models\Import;
 use App\Models\PhoneEvent;
@@ -97,14 +98,14 @@ class PersistPhoneEventsFromRowsAction
 
         foreach (['Y-m-d H:i:s', 'Y-m-d H:i', 'd/m/y H:i:s', 'd/m/y H:i', 'd/m/Y H:i:s', 'd/m/Y H:i'] as $format) {
             try {
-                return Carbon::createFromFormat($format, "{$date} {$time}");
+                return Carbon::createFromFormat($format, "$date $time");
             } catch (Throwable) {
                 //
             }
         }
 
         try {
-            return Carbon::parse("{$date} {$time}");
+            return Carbon::parse("$date $time");
         } catch (Throwable) {
             return null;
         }
@@ -115,9 +116,9 @@ class PersistPhoneEventsFromRowsAction
         $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
 
         return match (true) {
-            in_array($type, ['DATOS', 'DATO', 'DATA'], true) => 'data',
-            in_array($type, ['SMS', 'MENSAJE', 'MENSAJES', 'MENSAJES 2 VIAS'], true) => 'message',
-            in_array($type, ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL', 'VOZ ENTRANTE', 'VOZ SALIENTE', 'VOZ TRANSITO'], true) => 'call',
+            in_array($type, PhoneEventsConstants::IS_DATA_ARRAY, true) => 'data',
+            in_array($type, PhoneEventsConstants::IS_MESSAGE_ARRAY, true) => 'message',
+            in_array($type, PhoneEventsConstants::IS_CALL_ARRAY, true) => 'call',
             default => null,
         };
     }

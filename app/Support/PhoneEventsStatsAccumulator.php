@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Constants\PhoneEventsConstants;
 use App\Data\PhoneEventData;
 use Illuminate\Support\Str;
 
@@ -79,36 +80,28 @@ class PhoneEventsStatsAccumulator
     {
         $normalized = $this->normalize($type);
 
-        return Str::of($normalized)->contains([
-            'LLAMADA',
-            'LLAMADAS',
-            'VOZ',
-            'CALL',
-            'VOZ ENTRANTE',
-            'VOZ SALIENTE',
-            'VOZ TRANSITO'
-        ]);
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_CALL_ARRAY);
     }
 
     public function isMessage(?string $type): bool
     {
         $normalized = $this->normalize($type);
 
-        return Str::of($normalized)->contains(['SMS', 'MENSAJE', 'MENSAJES', 'MENSAJES 2 VIAS']);
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_MESSAGE_ARRAY);
     }
 
     private function isData(?string $type): bool
     {
         $normalized = $this->normalize($type);
 
-        return Str::of($normalized)->contains(['DATOS', 'DATA', 'INTERNET']);
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_DATA_ARRAY);
     }
 
     private function isDataContact(string $contact): bool
     {
         $normalized = $this->normalize($contact);
 
-        return Str::of($normalized)->contains(['DATOS', 'DATA', 'INTERNET']);
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_DATA_ARRAY);
     }
 
     private function normalize(?string $value): string
