@@ -11,6 +11,8 @@ class PhoneEventsStatsAccumulator
 
     public int $totalCalls = 0;
 
+    public int $totalMessages = 0;
+
     public int $totalData = 0;
 
     public int $totalDuration = 0;
@@ -28,6 +30,10 @@ class PhoneEventsStatsAccumulator
 
         if ($this->isCall($event->type)) {
             $this->totalCalls++;
+        }
+
+        if ($this->isMessage($event->type)) {
+            $this->totalMessages++;
         }
 
         if ($this->isData($event->type)) {
@@ -56,6 +62,7 @@ class PhoneEventsStatsAccumulator
         return [
             'total_events' => $this->totalEvents,
             'total_calls' => $this->totalCalls,
+            'total_messages' => $this->totalMessages,
             'total_data' => $this->totalData,
             'total_duration' => $this->totalDuration,
             'average_duration' => $this->totalEvents > 0
@@ -73,10 +80,21 @@ class PhoneEventsStatsAccumulator
         $normalized = $this->normalize($type);
 
         return Str::of($normalized)->contains([
-            'VOZ',
             'LLAMADA',
+            'LLAMADAS',
+            'VOZ',
             'CALL',
+            'VOZ ENTRANTE',
+            'VOZ SALIENTE',
+            'VOZ TRANSITO'
         ]);
+    }
+
+    public function isMessage(?string $type): bool
+    {
+        $normalized = $this->normalize($type);
+
+        return Str::of($normalized)->contains(['SMS', 'MENSAJE', 'MENSAJES', 'MENSAJES 2 VIAS']);
     }
 
     private function isData(?string $type): bool
