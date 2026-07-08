@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\PhoneEventsController;
 use App\Http\Controllers\PhoneEventController;
+use App\Http\Controllers\PhoneEventsAnalyticsController;
+use App\Http\Controllers\PhoneEventsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,4 +14,5 @@ Route::post('imports/phone-events/analyze', [PhoneEventsController::class, 'prev
     ->name('imports.phone-events.preview');
 
 Route::get('process/{import}/show', [PhoneEventsController::class, 'show']);
+Route::get('process/{import}/events/analytics', PhoneEventsAnalyticsController::class);
 Route::get('process/{import}/events', [PhoneEventController::class, 'index']);
