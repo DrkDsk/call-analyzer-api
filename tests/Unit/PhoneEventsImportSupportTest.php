@@ -311,6 +311,7 @@ it('calculates phone event statistics', function () {
     foreach ([
         new PhoneEventData('9611', 'VOZ', '9611', '9612', '2026-06-25', '10:00', 30, null, null, null, null),
         new PhoneEventData('9611', 'CALL', '9611', '9612', '2026-06-25', '10:00', 60, null, null, null, null),
+        new PhoneEventData('9611', 'SMS', '9611', '9613', '2026-06-25', '10:00', 0, null, null, null, null),
         new PhoneEventData('9611', 'DATOS', '9611', 'INTERNET', '2026-06-26', '11:00', 0, null, null, null, null),
         new PhoneEventData('9611', 'INTERNET', '9611', '', '2026-06-26', '11:00', 10, null, null, null, null),
     ] as $event) {
@@ -318,12 +319,13 @@ it('calculates phone event statistics', function () {
     }
 
     expect($accumulator->result())->toMatchArray([
-        'total_events' => 4,
+        'total_events' => 5,
         'total_calls' => 2,
+        'total_messages' => 1,
         'total_data' => 2,
         'total_duration' => 100,
-        'average_duration' => 25.0,
-        'unique_contacts' => 1,
+        'average_duration' => 20.0,
+        'unique_contacts' => 2,
         'top_contact' => '9612',
         'peak_hour' => '10:00',
         'active_days' => 2,

@@ -32,6 +32,10 @@ class PhoneEventsStatsAccumulator
             $this->totalCalls++;
         }
 
+        if ($this->isMessage($event->type)) {
+            $this->totalMessages++;
+        }
+
         if ($this->isData($event->type)) {
             $this->totalData++;
         }
