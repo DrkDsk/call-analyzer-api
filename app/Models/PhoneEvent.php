@@ -14,6 +14,7 @@ class PhoneEvent extends Model
         'first_seen_at',
         'last_seen_at',
         'calls_count',
+        'call_direction',
         'messages_count',
         'data_count',
     ];

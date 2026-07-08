@@ -309,8 +309,8 @@ it('calculates phone event statistics', function () {
     $accumulator = new PhoneEventsStatsAccumulator;
 
     foreach ([
-        new PhoneEventData('9611', 'VOZ', '9611', '9612', '2026-06-25', '10:00', 30, null, null, null, null),
-        new PhoneEventData('9611', 'CALL', '9611', '9612', '2026-06-25', '10:00', 60, null, null, null, null),
+        new PhoneEventData('9611', 'VOZ ENTRANTE', '9611', '9612', '2026-06-25', '10:00', 30, null, null, null, null),
+        new PhoneEventData('9611', 'VOZ SALIENTE', '9611', '9612', '2026-06-25', '10:00', 60, null, null, null, null),
         new PhoneEventData('9611', 'SMS', '9611', '9613', '2026-06-25', '10:00', 0, null, null, null, null),
         new PhoneEventData('9611', 'DATOS', '9611', 'INTERNET', '2026-06-26', '11:00', 0, null, null, null, null),
         new PhoneEventData('9611', 'INTERNET', '9611', '', '2026-06-26', '11:00', 10, null, null, null, null),
@@ -323,6 +323,8 @@ it('calculates phone event statistics', function () {
         'total_calls' => 2,
         'total_messages' => 1,
         'total_data' => 2,
+        'incoming_calls_count' => 1,
+        'outgoing_calls_count' => 1,
         'total_duration' => 100,
         'average_duration' => 20.0,
         'unique_contacts' => 2,

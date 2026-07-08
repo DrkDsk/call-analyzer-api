@@ -18,7 +18,7 @@ it('persists grouped phone event analysis by import contact and number', functio
     ]);
 
     (new PersistPhoneEventsFromRowsAction)->execute($import, [
-        new PhoneEventData('9611', 'VOZ', '9611', '9612', '2026-06-25', '10:00', 30, null, null, null, null),
+        new PhoneEventData('9611', 'VOZ ENTRANTE', '9611', '9612', '2026-06-25', '10:00', 30, null, null, null, null),
         new PhoneEventData('9611', 'sms', '9611', '9612', '2026-06-24', '09:30:00', 0, null, null, null, null),
         new PhoneEventData('9611', 'DATOS', '9611', 'internet.itelcel.com', '07/11/20', '10:56:38', 3191, null, null, null, null),
         new PhoneEventData('9611', 'dato', '9611', 'internet.itelcel.com', '08/11/20', '11:00:00', 300, null, null, null, null),
@@ -35,6 +35,7 @@ it('persists grouped phone event analysis by import contact and number', functio
     expect($voice->first_seen_at->toDateTimeString())->toBe('2026-06-24 09:30:00')
         ->and($voice->last_seen_at->toDateTimeString())->toBe('2026-06-25 10:00:00')
         ->and($voice->calls_count)->toBe(1)
+        ->and($voice->call_direction)->toBe('incoming')
         ->and($voice->messages_count)->toBe(1)
         ->and($voice->data_count)->toBe(0);
 
@@ -47,8 +48,30 @@ it('persists grouped phone event analysis by import contact and number', functio
     expect($data->first_seen_at->toDateTimeString())->toBe('2020-11-07 10:56:38')
         ->and($data->last_seen_at->toDateTimeString())->toBe('2020-11-08 11:00:00')
         ->and($data->calls_count)->toBe(0)
+        ->and($data->call_direction)->toBeNull()
         ->and($data->messages_count)->toBe(0)
         ->and($data->data_count)->toBe(2);
+});
+
+it('persists outgoing call direction for grouped phone event analysis', function () {
+    $import = Import::query()->create([
+        'original_filename' => 'events.xlsx',
+        'stored_path' => 'imports/phone-events/events.xlsx',
+        'file_size' => 100,
+        'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'status' => 'completed',
+    ]);
+
+    (new PersistPhoneEventsFromRowsAction)->execute($import, [
+        new PhoneEventData('9611', 'VOZ SALIENTE', '9611', '9614', '2026-06-25', '10:00', 30, null, null, null, null),
+    ]);
+
+    $phoneEvent = PhoneEvent::query()->firstOrFail();
+
+    expect($phoneEvent->calls_count)->toBe(1)
+        ->and($phoneEvent->call_direction)->toBe('outgoing')
+        ->and($phoneEvent->messages_count)->toBe(0)
+        ->and($phoneEvent->data_count)->toBe(0);
 });
 
 it('updates existing grouped phone event analysis with upsert', function () {

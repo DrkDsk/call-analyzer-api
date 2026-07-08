@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Constants\PhoneEventsConstants;
 use App\Data\PhoneEventData;
 use App\Models\Import;
 use App\Models\PhoneEvent;
@@ -33,6 +34,8 @@ class PersistPhoneEventsFromRowsAction
                 'first_seen_at' => $occurredAt,
                 'last_seen_at' => $occurredAt,
                 'calls_count' => 0,
+                'call_direction' => null,
+                'has_mixed_call_directions' => false,
                 'messages_count' => 0,
                 'data_count' => 0,
             ];
@@ -51,7 +54,7 @@ class PersistPhoneEventsFromRowsAction
             }
 
             match ($this->classifyType($row->type)) {
-                'call' => $groupedRows[$key]['calls_count']++,
+                'call' => $this->addCall($groupedRows[$key], $this->classifyCallDirection($row->type)),
                 'message' => $groupedRows[$key]['messages_count']++,
                 'data' => $groupedRows[$key]['data_count']++,
                 default => null,
@@ -68,6 +71,11 @@ class PersistPhoneEventsFromRowsAction
                 'created_at' => $now,
                 'updated_at' => $now,
             ])
+            ->map(static function (array $row): array {
+                unset($row['has_mixed_call_directions']);
+
+                return $row;
+            })
             ->chunk(1000)
             ->each(static function ($chunk): void {
                 PhoneEvent::query()->upsert(
@@ -77,6 +85,7 @@ class PersistPhoneEventsFromRowsAction
                         'first_seen_at',
                         'last_seen_at',
                         'calls_count',
+                        'call_direction',
                         'messages_count',
                         'data_count',
                         'updated_at',
@@ -97,14 +106,14 @@ class PersistPhoneEventsFromRowsAction
 
         foreach (['Y-m-d H:i:s', 'Y-m-d H:i', 'd/m/y H:i:s', 'd/m/y H:i', 'd/m/Y H:i:s', 'd/m/Y H:i'] as $format) {
             try {
-                return Carbon::createFromFormat($format, "{$date} {$time}");
+                return Carbon::createFromFormat($format, "$date $time");
             } catch (Throwable) {
                 //
             }
         }
 
         try {
-            return Carbon::parse("{$date} {$time}");
+            return Carbon::parse("$date $time");
         } catch (Throwable) {
             return null;
         }
@@ -115,9 +124,43 @@ class PersistPhoneEventsFromRowsAction
         $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
 
         return match (true) {
-            in_array($type, ['DATOS', 'DATO', 'DATA'], true) => 'data',
-            in_array($type, ['SMS', 'MENSAJE', 'MENSAJES', 'MENSAJES 2 VIAS'], true) => 'message',
-            in_array($type, ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL', 'VOZ ENTRANTE', 'VOZ SALIENTE', 'VOZ TRANSITO'], true) => 'call',
+            in_array($type, PhoneEventsConstants::IS_DATA_ARRAY, true) => 'data',
+            in_array($type, PhoneEventsConstants::IS_MESSAGE_ARRAY, true) => 'message',
+            in_array($type, PhoneEventsConstants::IS_CALL_ARRAY, true) => 'call',
+            default => null,
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function addCall(array &$row, ?string $callDirection): void
+    {
+        $row['calls_count']++;
+
+        if ($callDirection === null || $row['has_mixed_call_directions']) {
+            return;
+        }
+
+        if ($row['call_direction'] === null) {
+            $row['call_direction'] = $callDirection;
+
+            return;
+        }
+
+        if ($row['call_direction'] !== $callDirection) {
+            $row['call_direction'] = null;
+            $row['has_mixed_call_directions'] = true;
+        }
+    }
+
+    private function classifyCallDirection(?string $type): ?string
+    {
+        $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
+
+        return match (true) {
+            in_array($type, PhoneEventsConstants::IS_INCOMING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_INCOMING,
+            in_array($type, PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_OUTGOING,
             default => null,
         };
     }
