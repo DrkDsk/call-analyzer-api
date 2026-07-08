@@ -9,6 +9,7 @@ use App\Support\PhoneEventsStatsAccumulator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use RuntimeException;
 use Throwable;
 
 readonly class AnalyzePhoneEventsImportAction
@@ -26,7 +27,7 @@ readonly class AnalyzePhoneEventsImportAction
         $path = $file->store('imports/phone-events');
 
         if ($path === false) {
-            throw new \RuntimeException('No se pudo guardar el archivo temporal.');
+            throw new RuntimeException('No se pudo guardar el archivo temporal.');
         }
 
         $import = $persistSummary ? $this->createImport($file, $path) : null;
