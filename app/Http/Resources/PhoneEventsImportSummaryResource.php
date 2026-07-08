@@ -19,6 +19,8 @@ class PhoneEventsImportSummaryResource extends JsonResource
             'total_calls' => $this['total_calls'],
             'total_messages' => $this['total_messages'],
             'total_data' => $this['total_data'],
+            'incoming_calls_count' => $this['incoming_calls_count'] ?? 0,
+            'outgoing_calls_count' => $this['outgoing_calls_count'] ?? 0,
 
             'total_duration' => round($this['total_duration'] / 60, 2),
             'average_duration' => round($this['average_duration'] / 60, 2),

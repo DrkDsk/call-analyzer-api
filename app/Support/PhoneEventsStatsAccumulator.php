@@ -12,6 +12,10 @@ class PhoneEventsStatsAccumulator
 
     public int $totalCalls = 0;
 
+    public int $incomingCallsCount = 0;
+
+    public int $outgoingCallsCount = 0;
+
     public int $totalMessages = 0;
 
     public int $totalData = 0;
@@ -31,6 +35,14 @@ class PhoneEventsStatsAccumulator
 
         if ($this->isCall($event->type)) {
             $this->totalCalls++;
+
+            if ($this->isIncomingCall($event->type)) {
+                $this->incomingCallsCount++;
+            }
+
+            if ($this->isOutgoingCall($event->type)) {
+                $this->outgoingCallsCount++;
+            }
         }
 
         if ($this->isMessage($event->type)) {
@@ -65,6 +77,8 @@ class PhoneEventsStatsAccumulator
             'total_calls' => $this->totalCalls,
             'total_messages' => $this->totalMessages,
             'total_data' => $this->totalData,
+            'incoming_calls_count' => $this->incomingCallsCount,
+            'outgoing_calls_count' => $this->outgoingCallsCount,
             'total_duration' => $this->totalDuration,
             'average_duration' => $this->totalEvents > 0
                 ? round($this->totalDuration / $this->totalEvents, 2)
@@ -88,6 +102,20 @@ class PhoneEventsStatsAccumulator
         $normalized = $this->normalize($type);
 
         return Str::of($normalized)->contains(PhoneEventsConstants::IS_MESSAGE_ARRAY);
+    }
+
+    private function isIncomingCall(?string $type): bool
+    {
+        $normalized = $this->normalize($type);
+
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_INCOMING_CALL_ARRAY);
+    }
+
+    private function isOutgoingCall(?string $type): bool
+    {
+        $normalized = $this->normalize($type);
+
+        return Str::of($normalized)->contains(PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY);
     }
 
     private function isData(?string $type): bool

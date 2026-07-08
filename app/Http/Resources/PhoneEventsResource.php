@@ -26,6 +26,7 @@ class PhoneEventsResource extends JsonResource
                 ->timezone('America/Mexico_City')
                 ->format('Y-m-d\TH:i:sP'),
             'calls_count' => $this->calls_count,
+            'call_direction' => $this->call_direction,
             'messages_count' => $this->messages_count,
             'data_count' => $this->data_count,
             'created_at' => $this->created_at,

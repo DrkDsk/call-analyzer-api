@@ -2,7 +2,6 @@
 
 namespace App\Data;
 
-use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
@@ -66,7 +65,7 @@ readonly class PhoneEventData
     /**
      * @param  array<string, int>  $headersMap
      */
-    private static function value(Collection $row, array $headersMap, string $field): ?Closure
+    private static function value(Collection $row, array $headersMap, string $field): mixed
     {
         return isset($headersMap[$field]) ? $row->get($headersMap[$field]) : null;
     }
