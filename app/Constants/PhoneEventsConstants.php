@@ -10,7 +10,7 @@ final class PhoneEventsConstants
 
     public const string CALL_DIRECTION_UNKNOWN = 'unknown';
 
-    public const array IS_CALL_ARRAY = ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL', 'VOZ ENTRANTE', 'VOZ SALIENTE', 'VOZ TRANSITO'];
+    public const array IS_CALL_ARRAY = ['LLAMADA', 'LLAMADAS', 'VOZ', 'CALL', 'VOZ ENTRANTE', 'VOZ SALIENTE', 'VOZ TRANSITO', 'VOZ TRANSFER'];
 
     public const array IS_INCOMING_CALL_ARRAY = ['VOZ ENTRANTE'];
 

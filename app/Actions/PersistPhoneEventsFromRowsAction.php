@@ -124,9 +124,9 @@ class PersistPhoneEventsFromRowsAction
         $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
 
         return match (true) {
-            in_array($type, PhoneEventsConstants::IS_DATA_ARRAY, true) => 'data',
-            in_array($type, PhoneEventsConstants::IS_MESSAGE_ARRAY, true) => 'message',
-            in_array($type, PhoneEventsConstants::IS_CALL_ARRAY, true) => 'call',
+            Str::contains($type, PhoneEventsConstants::IS_DATA_ARRAY, true) => 'data',
+            Str::contains($type, PhoneEventsConstants::IS_MESSAGE_ARRAY, true) => 'message',
+            Str::contains($type, PhoneEventsConstants::IS_CALL_ARRAY, true) => 'call',
             default => null,
         };
     }
@@ -159,8 +159,8 @@ class PersistPhoneEventsFromRowsAction
         $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
 
         return match (true) {
-            in_array($type, PhoneEventsConstants::IS_INCOMING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_INCOMING,
-            in_array($type, PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_OUTGOING,
+            Str::contains($type, PhoneEventsConstants::IS_INCOMING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_INCOMING,
+            Str::contains($type, PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_OUTGOING,
             default => null,
         };
     }
