@@ -5,6 +5,7 @@ use App\Exceptions\HeadersRequiredException;
 use App\Imports\PhoneEventsPreviewImport;
 use App\Support\PhoneEventsHeaderDetector;
 use App\Support\PhoneEventsStatsAccumulator;
+use App\Support\PhoneEventTypeClassifier;
 
 function phoneEventsHeaderRow(): array
 {
@@ -37,6 +38,18 @@ function phoneEventsDataRow(): array
         '50°',
     ];
 }
+
+it('normalizes and classifies incoming and outgoing call directions', function () {
+    $classifier = new PhoneEventTypeClassifier;
+
+    expect($classifier->normalize('  vóz entránte  '))->toBe('VOZ ENTRANTE')
+        ->and($classifier->callDirection('  vóz entránte  '))->toBe('incoming')
+        ->and($classifier->callDirection(' voz saliente '))->toBe('outgoing')
+        ->and($classifier->isIncomingCall('VOZ ENTRANTE'))->toBeTrue()
+        ->and($classifier->isOutgoingCall('VOZ SALIENTE'))->toBeTrue()
+        ->and($classifier->isCall(' voz saliente '))->toBeTrue()
+        ->and($classifier->callDirection('SMS'))->toBeNull();
+});
 
 it('accepts headers with accents', function () {
     [, $headersMap] = (new PhoneEventsHeaderDetector)->detect(collect([
