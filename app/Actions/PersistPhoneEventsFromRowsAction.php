@@ -6,12 +6,18 @@ use App\Constants\PhoneEventsConstants;
 use App\Data\PhoneEventData;
 use App\Models\Import;
 use App\Models\PhoneEvent;
+use App\Support\PhoneEventTypeClassifier;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Throwable;
 
-class PersistPhoneEventsFromRowsAction
+readonly class PersistPhoneEventsFromRowsAction
 {
+
+    public function __construct(
+        private PhoneEventTypeClassifier $typeClassifier,
+    ) {}
+
     /**
      * @param  iterable<PhoneEventData>  $rows
      */
@@ -24,7 +30,18 @@ class PersistPhoneEventsFromRowsAction
                 continue;
             }
 
-            $key = $row->numberA.'|'.$row->numberB;
+            $eventType = $this->classifyType($row->type);
+
+            $callDirection = $eventType === 'call'
+                ? $this->typeClassifier->callDirection($row->type)
+                : null;
+
+            $key = implode('|', [
+                $row->numberA,
+                $row->numberB,
+                $callDirection ?? PhoneEventsConstants::CALL_DIRECTION_UNKNOWN,
+            ]);
+
             $occurredAt = $this->occurredAt($row);
 
             $groupedRows[$key] ??= [
@@ -53,8 +70,8 @@ class PersistPhoneEventsFromRowsAction
                 }
             }
 
-            match ($this->classifyType($row->type)) {
-                'call' => $this->addCall($groupedRows[$key], $this->classifyCallDirection($row->type)),
+            match ($eventType) {
+                'call' => $this->addCall($groupedRows[$key], $callDirection),
                 'message' => $groupedRows[$key]['messages_count']++,
                 'data' => $groupedRows[$key]['data_count']++,
                 default => null,
@@ -80,7 +97,7 @@ class PersistPhoneEventsFromRowsAction
             ->each(static function ($chunk): void {
                 PhoneEvent::query()->upsert(
                     $chunk->values()->all(),
-                    ['import_id', 'contact', 'number'],
+                    ['import_id', 'contact', 'number', 'call_direction'],
                     [
                         'first_seen_at',
                         'last_seen_at',
@@ -121,12 +138,12 @@ class PersistPhoneEventsFromRowsAction
 
     private function classifyType(?string $type): ?string
     {
-        $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
+        $type = $this->typeClassifier->normalize($type);
 
         return match (true) {
             Str::contains($type, PhoneEventsConstants::IS_DATA_ARRAY, true) => 'data',
             Str::contains($type, PhoneEventsConstants::IS_MESSAGE_ARRAY, true) => 'message',
-            Str::contains($type, PhoneEventsConstants::IS_CALL_ARRAY, true) => 'call',
+            $this->typeClassifier->isCall($type) => 'call',
             default => null,
         };
     }
@@ -152,16 +169,5 @@ class PersistPhoneEventsFromRowsAction
             $row['call_direction'] = null;
             $row['has_mixed_call_directions'] = true;
         }
-    }
-
-    private function classifyCallDirection(?string $type): ?string
-    {
-        $type = Str::of((string) $type)->ascii()->upper()->trim()->toString();
-
-        return match (true) {
-            Str::contains($type, PhoneEventsConstants::IS_INCOMING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_INCOMING,
-            Str::contains($type, PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY, true) => PhoneEventsConstants::CALL_DIRECTION_OUTGOING,
-            default => null,
-        };
     }
 }

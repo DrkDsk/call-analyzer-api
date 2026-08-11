@@ -55,7 +55,7 @@ class PhoneEventsController extends Controller
             ];
 
             return new PhoneEventsImportPreviewResource($data);
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             return new ErrorResource(
                 'No se pudo cargar el archivo.',
             );

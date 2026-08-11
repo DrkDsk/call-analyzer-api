@@ -8,6 +8,10 @@ use Illuminate\Support\Str;
 
 class PhoneEventsStatsAccumulator
 {
+    public function __construct(
+        private readonly PhoneEventTypeClassifier $typeClassifier = new PhoneEventTypeClassifier,
+    ) {}
+
     public int $totalEvents = 0;
 
     public int $totalCalls = 0;
@@ -33,14 +37,14 @@ class PhoneEventsStatsAccumulator
         $this->totalEvents++;
         $this->totalDuration += $event->duration;
 
-        if ($this->isCall($event->type)) {
+        if ($this->typeClassifier->isCall($event->type)) {
             $this->totalCalls++;
 
-            if ($this->isIncomingCall($event->type)) {
+            if ($this->typeClassifier->isIncomingCall($event->type)) {
                 $this->incomingCallsCount++;
             }
 
-            if ($this->isOutgoingCall($event->type)) {
+            if ($this->typeClassifier->isOutgoingCall($event->type)) {
                 $this->outgoingCallsCount++;
             }
         }
@@ -90,50 +94,24 @@ class PhoneEventsStatsAccumulator
         ];
     }
 
-    private function isCall(?string $type): bool
-    {
-        $normalized = $this->normalize($type);
-
-        return Str::of($normalized)->contains(PhoneEventsConstants::IS_CALL_ARRAY);
-    }
-
     public function isMessage(?string $type): bool
     {
-        $normalized = $this->normalize($type);
+        $normalized = $this->typeClassifier->normalize($type);
 
         return Str::of($normalized)->contains(PhoneEventsConstants::IS_MESSAGE_ARRAY);
     }
 
-    private function isIncomingCall(?string $type): bool
-    {
-        $normalized = $this->normalize($type);
-
-        return Str::of($normalized)->contains(PhoneEventsConstants::IS_INCOMING_CALL_ARRAY);
-    }
-
-    private function isOutgoingCall(?string $type): bool
-    {
-        $normalized = $this->normalize($type);
-
-        return Str::of($normalized)->contains(PhoneEventsConstants::IS_OUTGOING_CALL_ARRAY);
-    }
-
     private function isData(?string $type): bool
     {
-        $normalized = $this->normalize($type);
+        $normalized = $this->typeClassifier->normalize($type);
 
         return Str::of($normalized)->contains(PhoneEventsConstants::IS_DATA_ARRAY);
     }
 
     private function isDataContact(string $contact): bool
     {
-        $normalized = $this->normalize($contact);
+        $normalized = $this->typeClassifier->normalize($contact);
 
         return Str::of($normalized)->contains(PhoneEventsConstants::IS_DATA_ARRAY);
-    }
-
-    private function normalize(?string $value): string
-    {
-        return Str::of((string) $value)->ascii()->upper()->trim()->toString();
     }
 }
